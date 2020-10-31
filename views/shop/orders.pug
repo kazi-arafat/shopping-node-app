@@ -2,4 +2,19 @@ extends ../layout/base.pug
 
 block content
     main
-        h1 No Orders
+        if orders.length > 0
+            h1 Your Orders
+            hr.separator
+            each order in orders
+                .card
+                    .card__header-order
+                        h2 Order 
+                            span#order_id  ##{order._id}
+                        small ORDER PLACED ON 
+                            span#date_ordered
+                    .card__content-order
+                        each item in order.items
+                            ul
+                                li #{item.title} Qty: #{item.quantity}
+        else
+            h1 You have not placed any orders. 
