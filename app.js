@@ -1,13 +1,13 @@
-// const http = require("http");
 const path = require('path');
 
 const express = require("express");
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 const adminRoutes = require('./routes/adminRouter');
 const shopRoutes = require('./routes/shopRouter');
 const errorController = require('./controllers/errorController');
-const mongoConnect = require('./util/database').mongoConnect;
+const connectionUri = require('./util/database').connectionUri;
 const User = require('./models/user');
 
 const app = express();
@@ -18,9 +18,9 @@ app.set('view engine','pug');
 app.set('views','views');
 
 app.use((req, res, next) => {
-    User.fetchById('5f9d827ac617a685d93512bc')
+    User.findById('5f9e66cce3a06546c86ac783')
         .then(user =>{
-            req.user = new User(user.name,user.email,user.cart,user._id);
+            req.user = user;
             next();
         })
         .catch(err => console.error(err));
@@ -34,6 +34,31 @@ app.use(shopRoutes);
 // For Error handling 404
 app.use(errorController.error404);
 
-mongoConnect(() => {
-    app.listen(3000);
-});
+// console.log('Mongoose URI ', connectionUri);l
+
+mongoose
+    .connect(connectionUri,{
+         useNewUrlParser: true,
+         useUnifiedTopology: true
+        })
+    .then((result) =>{
+        User
+            .findOne()
+            .then(user => {
+                if(!user){
+                    const user = new User({
+                        name: 'Kazi',
+                        email: 'example@example.com',
+                        cart: {
+                            items: []
+                        }
+                    });
+                    user.save()
+                    console.log('User created');
+                }
+            });
+    })
+    .then(() =>{
+        app.listen(3000);
+    })
+    .catch(err => console.log(err));

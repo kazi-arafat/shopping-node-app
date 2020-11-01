@@ -17,7 +17,7 @@ block content
                         .card__actions
                             a(href="/admin/edit-product/" + product._id + "?edit=true",class='btn') Edit
                             form(action="/admin/delete-product", method="POST")
-                                button.btn(type="submit") Delete
+                                button.btn(type="submit",onclick="return confirm('Do You want to delete?')") Delete
                                 input(type="hidden", name="id" value=product._id)
         else 
             h1 No products

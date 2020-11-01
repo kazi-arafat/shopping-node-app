@@ -11,12 +11,17 @@ exports.getAddProduct = (req, res, next) => {
 };
 
 exports.postAddProduct = (req, res, next) => {
-  // console.log(req.body.title);
   const title = req.body.title;
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  const product = new Product(title, imageUrl, description, price, null, req.user._id);
+  const product = new Product({
+    title:title,
+    imageUrl:imageUrl,
+    description:description,
+    price:price,
+    userId: req.user
+  });
   product
     .save()
     .then((result) => {
@@ -27,8 +32,7 @@ exports.postAddProduct = (req, res, next) => {
 };
 
 exports.getAllAdminProducts = (req, res, next) => {
-  console.log("Get all products admin");
-  Product.fetchAll()
+  Product.find()
     .then((products) => {
       res.render("admin/products.pug", {
         prods: products,
@@ -46,7 +50,7 @@ exports.getEditProduct = (req, res, next) => {
   if (!editMode) {
     res.redirect("/");
   }
-  Product.fetchById(id)
+  Product.findById(id)
     .then((product) => {
       if (!product) {
         return res.redirect("/");
@@ -66,18 +70,14 @@ exports.postEditProduct = (req, res, next) => {
   const updatedPrice = req.body.price;
   const updatedImageUrl = req.body.imageUrl;
   const updatedDescription = req.body.description;
-  const userId = req.user._id;
-  const updatedProduct = new Product(
-    updatedTitle,
-    updatedImageUrl,
-    updatedDescription,
-    updatedPrice,
-    productId,
-    userId
-  );
-  // console.log(updatedProduct);
-  updatedProduct
-    .save()
+  Product.findById(productId)
+    .then(product =>{
+      product.title = updatedTitle;
+      product.imageUrl = updatedImageUrl;
+      product.description = updatedDescription;
+      product.price = updatedPrice;
+      return product.save()
+    })
     .then(() => {
       res.redirect("/admin/products");
     })
@@ -86,10 +86,20 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const productId = req.body.id;
-  Product.delete(productId)
-    .then(() => {
-      User.clearCart(productId)
-    })
+  Product.findByIdAndDelete(productId)
+    // .then(() => {
+    //   // User.clearCart(productId);
+    //   return User
+    //     .find({'cart.items.productId': productId})
+    //     .then(rslt =>{
+    //       const updatedCartItems = rslt.cart.items.filter(item =>{
+    //         return item.productId.toString() !== productId.toString();
+    //       });
+    //       req.user.cart.items = updatedCartItems;
+    //       console.log('Request User',req.user);
+    //       return req.user.save()
+    //     })
+    // })
     .then(() =>{
       res.redirect("/admin/products");
     })

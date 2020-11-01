@@ -10,11 +10,11 @@ block content
                     .card__header-order
                         h2 Order 
                             span#order_id  ##{order._id}
-                        small ORDER PLACED ON 
+                        small ORDER PLACED ON #{new Date(order.createdAt).toLocaleString()}
                             span#date_ordered
                     .card__content-order
-                        each item in order.items
+                        each product in order.products
                             ul
-                                li #{item.title} Qty: #{item.quantity}
+                                li #{product.title} Qty: #{product.quantity}
         else
             h1 You have not placed any orders. 
